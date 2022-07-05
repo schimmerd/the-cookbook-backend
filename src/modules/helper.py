@@ -1,13 +1,9 @@
 from datetime import datetime
-from src.modules.gcp.push_to_pubsub import upload
-from src.modules.gcp.datastore import put_new_entity, get_recipes, get_user, create_user, update_user_entity
 from google.cloud import vision
-import bcrypt
+
 import pytz
 import json
 import uuid
-
-import config
 
 
 def get_time(time_zone='UTC'):
@@ -68,90 +64,12 @@ def check_is_valid(**kwargs):
         return 'Service unable to validate incoming request: {}'.format(exc)
 
 
-def sign_up(email, password, first_name, last_name):
-    try:
-        salt = bcrypt.gensalt(rounds=12)
-        hashed_password = bcrypt.hashpw(password=password.encode('utf-8'), salt=salt)
-        user_form = {
-            "email": email,
-            "password": hashed_password,
-            "first_name": first_name,
-            "last_name": last_name
-        }
-        error, code, user = create_user(user_form=user_form)
-        if error:
-            return error, code, None
-        return None, code, user
-    except Exception as exc:
-        return 'Service unable to create a new user: {}'.format(exc), 503, None
-
-
-def login(email, password):
-    try:
-        error, code, user = get_user(email=email)
-        if error:
-            return error, code, None
-        if bcrypt.checkpw(password=password.encode('utf-8'), hashed_password=user.get('password')):
-            del user['password']
-            return None, code, user
-        return 'Incorrect email or password', 401, None
-    except Exception as exc:
-        return 'Service unable to authenticate user: {}'.format(exc), 503, None
-
-
-def update(email, data):
-    try:
-        error, code, profile = update_user_entity(email=email, data=data)
-        if error:
-            return error, code, None
-        return None, 200, profile
-    except Exception as exc:
-        return 'Service unable to update user entity: {}'.format(exc), 503, None
-
-
-def add_new_recipe(kw, isTM, files):
-    try:
-        if 'files[]' not in files:
-            return 'Error: No file part', None
-        files = files.getlist('files[]')
-
-        for file in files:
-            filename = file.filename
-            if file and allowed_file(filename):
-                # UPLOAD FILE TO GCS
-                error, dest_name = upload(file=file, name=filename)
-                if error:
-                    return error
-                # DETECT TEXT
-                url = 'gs://{}/{}'.format(config.BUCKET_NAME, dest_name)
-                error, texts = detect_text(uri=url)
-                if error:
-                    return error
-                raw_text = texts[0].description
-                # SAVE PARAMS ON DATA STORE
-                link = 'https://{}/{}'.format(config.LINK_PREFIX, dest_name)
-                # error = save_recipe(text=raw_text, uri=url, link=link, kw=kw, isTM=isTM)
-                error = put_new_entity(text=raw_text, uri=url, link=link, kw=kw, isTM=isTM)
-                if error:
-                    return error
-        return None
-    except Exception as exc:
-        return 'Service unable to check file upload: {}'.format(exc)
-
-
-def get_all_recipes():
-    try:
-        error, recipe_list = get_recipes()
-        if error:
-            return error, None
-        return None, recipe_list
-    except Exception as exc:
-        return 'Service unable to get all recipes: {}'.format(exc), None
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in config.ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def detect_text(uri):

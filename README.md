@@ -1,11 +1,11 @@
-### The Cookbook 
-Service for getting information about user profile and recipes, which are currently saved
+# The Cookbook 
+Service for receiving information about the user and recipes, which are currently stored in Datastore.
 
 ## Deploy
-gcloud builds submit --tag eu.gcr.io/v135-5247-playground-schimmer/the-cookbook
-gcloud beta run deploy the-cookbook --image eu.gcr.io/v135-5247-playground-schimmer/the-cookbook --platform managed --region europe-west1 --concurrency 10 --allow-unauthenticated --memory 2Gi
-         
-### Swagger docu coming soon
+```
+cd build
+./deploy.sh
+```
 
-# Todo
+## Todo
 - Rollback mechanism

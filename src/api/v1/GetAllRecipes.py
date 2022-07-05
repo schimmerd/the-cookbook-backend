@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from flask import jsonify
-from src.modules.helper import get_all_recipes
+from src.modules.core.recipe import get_all_recipes
 
 
 class Recipes(Resource):

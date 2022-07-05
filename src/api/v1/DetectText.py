@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from flask import request
-from src.modules.helper import add_new_recipe, check_is_valid
+from src.modules.core.recipe import add_new_recipe
+from src.modules.helper import check_is_valid
 
 
 class AddRecipe(Resource):

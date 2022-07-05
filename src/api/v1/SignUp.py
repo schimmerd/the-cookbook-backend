@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from flask import jsonify, request
-from src.modules.helper import sign_up, decode_data
+from src.modules.core.user import sign_up
+from src.modules.helper import decode_data
 
 
 class SignUp(Resource):

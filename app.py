@@ -1,15 +1,17 @@
+# Core library
 import os
 from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
+
+# First class
 from src.api.v1.DetectText import AddRecipe
 from src.api.v1.GetAllRecipes import Recipes
 from src.api.v1.Login import SignIn
 from src.api.v1.SignUp import SignUp
 from src.api.v1.Update import UpdateUser
-from mms.logger.cloud_run_logger import CloudRunLogger
+from logger import CloudRunLogger
 
-import config
 
 # Init Flask:
 # UPLOAD_FOLDER = '/upload'
@@ -17,12 +19,12 @@ import config
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 api = Api(app)
 CORS(app)
 
 # Create Logger:
-logger = CloudRunLogger(project_id=config.PROJECT_ID,
-                        local_run=True) # Todo Change in 'cloud' mode
+logger = CloudRunLogger(project_id=os.environ.get('GCP_PROJECT_ID'), local_run=True)  # Todo Change in 'cloud' mode
 
 
 api.add_resource(AddRecipe, "/api/v1/add", resource_class_args=(logger,))

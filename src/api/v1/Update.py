@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from flask import jsonify, request
-from src.modules.helper import update, decode_data
+from src.modules.core.user import update
+from src.modules.helper import decode_data
 
 
 class UpdateUser(Resource):
